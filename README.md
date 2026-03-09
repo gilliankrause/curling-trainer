@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Curling Trainer
 
-## Getting Started
+Web app to improve curling slide form, build knowledge (glossary + quiz), track practice sessions, and get personalized recommendations.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install dependencies: `npm install`
+2. Copy `.env.example` to `.env` and set `DATABASE_URL`, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL`.
+3. Create the database and run migrations: `npx prisma migrate dev`
+4. Seed glossary terms, quiz questions, and sample drills: `npx prisma db seed`
+5. Start the dev server: `npm run dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Profile** – Sign up, log in, edit profile (name, year started curling, club, teams). Progress is tracked per user.
+- **Video analyzer** – Upload slide videos (MP4, MOV, AVI, WebM). Run analysis to get form scores (balance, slide leg, release, consistency) and feedback. Analysis uses form-scoring logic; you can later send pose keypoints (e.g. from browser MediaPipe) to the analyze API for real pose-based scoring.
+- **Recommendations** – Based on low scores from your analyses, the app suggests focus areas, drills, and glossary terms. Shown on the dashboard and on each completed video analysis.
+- **Glossary** – Curated curling terms (from Curling Canada–style content) with search and category filter. Random term and term detail pages.
+- **Quiz** – Randomized quizzes from the glossary and rules. Optional category (glossary vs rules). Logged-in users’ attempts are saved.
+- **Practice sessions** – Log sessions with date, duration, focus areas, and notes.
+- **Drills** – Browse and create drills (name, description, focus area, difficulty, steps, optional video link). Seeded drills are used by the recommendations engine.
 
-## Learn More
+## Tech
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js 14 (App Router), TypeScript, Tailwind CSS
+- NextAuth.js (credentials), Prisma + SQLite
+- File storage: local `uploads/` (add S3/Vercel Blob for production)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` – Development server
+- `npm run build` – Production build
+- `npm run start` – Start production server
+- `npm run lint` – Run ESLint
+- `npm test` – Run lint + build (use after code changes to verify the app still works)
+- `npm run db:seed` – Run seed script
+- `npx prisma studio` – Open Prisma Studio to inspect the database

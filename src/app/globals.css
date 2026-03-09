@@ -5,23 +5,74 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Curling sheet background: use curling-sheet-bg.png, curling-sheet-acadia.png, or add your own to public/ */
+  --curling-bg: url("/curling-sheet-acadia.png") center/cover no-repeat fixed;
+  --curling-overlay: rgba(15, 23, 42, 0.75);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --curling-overlay: rgba(2, 6, 23, 0.82);
   }
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--curling-bg);
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--curling-overlay);
+  z-index: -1;
+}
+
+/* Card surface for main content so text is readable over the background */
+main {
+  position: relative;
+  background: rgba(255, 255, 255, 0.94);
+  color: #171717;
+  border-radius: 1rem;
+  margin: 1rem auto;
+  padding: 1.5rem 1.5rem 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  main {
+    background: rgba(15, 23, 42, 0.94);
+    color: #f1f5f9;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }

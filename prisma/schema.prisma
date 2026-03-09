@@ -1,0 +1,117 @@
+// Curling Trainer - SQLite schema (MVP)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  profile        Profile?
+  practiceSessions PracticeSession[]
+  quizAttempts   QuizAttempt[]
+  videoAnalyses  VideoAnalysis[]
+  favouriteDrills FavouriteDrill[]
+}
+
+model Profile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  yearStartedCurling Int?
+  club               String?
+  teams              String   // JSON array of team names
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model PracticeSession {
+  id               String         @id @default(cuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date             DateTime
+  durationMinutes  Int
+  focusAreas       String         // JSON array e.g. ["balance", "release"]
+  notes            String?
+  videoAnalysisId  String?
+  videoAnalysis    VideoAnalysis? @relation(fields: [videoAnalysisId], references: [id])
+  createdAt        DateTime       @default(now())
+}
+
+model Drill {
+  id               String           @id @default(cuid())
+  name             String
+  description      String
+  focusArea        String
+  difficulty       String
+  steps            String
+  videoLink        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  favouritedBy     FavouriteDrill[]
+}
+
+model FavouriteDrill {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drillId   String
+  drill     Drill    @relation(fields: [drillId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, drillId])
+}
+
+model GlossaryTerm {
+  id         String   @id @default(cuid())
+  term       String   @unique
+  definition String
+  category   String   // equipment, gameplay, ice, etc.
+  sourceUrl  String?
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+}
+
+model QuizQuestion {
+  id            String   @id @default(cuid())
+  questionText  String
+  type          String   // multiple_choice, true_false
+  options       String   // JSON array of options
+  correctAnswer String
+  sourceType    String?  // glossary, rules
+  sourceId      String?  // glossary_term_id or rules section ref
+  difficulty    String   // easy, medium, hard
+  createdAt     DateTime @default(now())
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int      // number correct
+  total     Int
+  category  String?  // optional: glossary, rules, or null for mixed
+  createdAt DateTime @default(now())
+}
+
+model VideoAnalysis {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoPath         String
+  status            String            // pending, processing, completed, failed
+  overallScore      Float?
+  subScores         String?           // JSON: { balance, slideLeg, release, consistency }
+  feedback          String?           // JSON array of feedback strings
+  frameRefs         String?           // JSON optional good/bad frame refs
+  createdAt         DateTime          @default(now())
+  completedAt       DateTime?
+  practiceSessions  PracticeSession[]
+}
