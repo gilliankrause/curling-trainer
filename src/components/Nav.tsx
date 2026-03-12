@@ -29,7 +29,7 @@ export function Nav() {
     <nav className="relative z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" className="font-semibold text-lg text-white">
-          Curling Trainer
+          Curling Coach
         </Link>
         <div className="relative" ref={menuRef}>
           <button

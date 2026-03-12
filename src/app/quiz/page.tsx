@@ -25,6 +25,7 @@ export default function QuizPage() {
   const [done, setDone] = useState(false);
   const [category, setCategory] = useState("");
   const [saved, setSaved] = useState(false);
+  const [answerHistory, setAnswerHistory] = useState<{ questionText: string; selected: string; correctAnswer: string }[]>([]);
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -40,6 +41,7 @@ export default function QuizPage() {
     setScore(0);
     setDone(false);
     setSaved(false);
+    setAnswerHistory([]);
   }, [category]);
 
   const current = questions[index];
@@ -47,6 +49,10 @@ export default function QuizPage() {
   function handleSubmit() {
     if (!current || selected == null) return;
     const correct = selected === current.correctAnswer;
+    setAnswerHistory((prev) => [
+      ...prev,
+      { questionText: current.questionText, selected, correctAnswer: current.correctAnswer },
+    ]);
     if (correct) setScore((s) => s + 1);
     if (index + 1 >= questions.length) {
       setDone(true);
@@ -70,6 +76,7 @@ export default function QuizPage() {
 
   if (done && questions.length > 0) {
     const displayScore = score;
+    const wrongAnswers = answerHistory.filter((a) => a.selected !== a.correctAnswer);
     return (
       <>
         <Nav />
@@ -80,6 +87,24 @@ export default function QuizPage() {
           </p>
           {status === "authenticated" && saved && (
             <p className="text-zinc-500 text-sm mt-2">Result saved to your profile.</p>
+          )}
+          {wrongAnswers.length > 0 && (
+            <div className="mt-6 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 bg-zinc-50 dark:bg-zinc-800/50">
+              <h2 className="font-semibold mb-3">Questions you got wrong</h2>
+              <ul className="space-y-4">
+                {wrongAnswers.map((a, i) => (
+                  <li key={i} className="text-sm">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">{a.questionText}</p>
+                    <p className="text-red-600 dark:text-red-400">
+                      Your answer: {a.selected}
+                    </p>
+                    <p className="text-green-600 dark:text-green-400">
+                      Correct answer: {a.correctAnswer}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
           <div className="mt-6 flex gap-4">
             <button
