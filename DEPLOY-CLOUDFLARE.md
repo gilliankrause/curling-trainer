@@ -2,6 +2,52 @@
 
 This guide walks through the easiest way to publish the app using a **free Cloudflare account**, with your code already on **GitHub**.
 
+---
+
+## Windows: use WSL for all CLI steps
+
+If you’re on **Windows**, run every terminal command in this guide inside **WSL** (Windows Subsystem for Linux). That avoids path, Node, and tooling issues and matches the Linux environment Cloudflare uses to build your app.
+
+### Prerequisites
+
+1. **Install WSL2** (if you don’t have it):
+   - In PowerShell (Admin): `wsl --install`
+   - Restart if prompted, then open **Ubuntu** (or another distro) from the Start menu.
+
+2. **Use your project from inside WSL** (pick one):
+   - **Option A (recommended):** Clone the repo inside WSL and work there:
+     ```bash
+     cd ~
+     git clone https://github.com/<your-username>/<your-repo>.git
+     cd <your-repo>
+     ```
+   - **Option B:** Keep the repo on Windows and open it in WSL:
+     ```bash
+     cd /mnt/c/Users/<YourWindowsUsername>/path/to/curling-trainer
+     ```
+     Replace with your real Windows user name and path. Node/npm will run in WSL; your editor can stay on Windows.
+
+3. **Node.js in WSL:** Install Node 18+ inside WSL (not only on Windows):
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+   node -v && npm -v
+   ```
+
+4. **Run all commands in a WSL terminal** (Ubuntu, etc.). Use the same WSL shell for `npx wrangler login` so the browser auth flow works correctly.
+
+### Generating a secret on Windows
+
+For `NEXTAUTH_SECRET`, in **WSL** run:
+
+```bash
+openssl rand -base64 32
+```
+
+Copy the output into your Cloudflare secrets. If you prefer PowerShell on Windows: `[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])`.
+
+---
+
 ## Important: Your app is full-stack
 
 This app uses **Next.js API routes**, **NextAuth**, and a **database** (Prisma + SQLite). On Cloudflare’s free tier you have two realistic options:
@@ -17,11 +63,11 @@ File-based SQLite (`file:./dev.db`) **does not work** on Cloudflare Workers (no 
 
 ## Part 1: One-time setup (adapter + database)
 
-Do this once on your machine, then commit the changes and push to GitHub.
+Do this once on your machine, then commit the changes and push to GitHub. **Windows:** use a WSL terminal and run from your project root inside WSL (see above).
 
 ### 1. Add the Cloudflare adapter (OpenNext)
 
-In your project root:
+In your project root (in WSL on Windows):
 
 ```bash
 npx @opennextjs/cloudflare migrate
@@ -40,7 +86,7 @@ Answer the prompts (e.g. project name like `curling-coach`).
 
 ### 2. Database: use Cloudflare D1 (free, recommended)
 
-Your app currently uses Prisma with SQLite. On Cloudflare you should use **D1** (SQLite at the edge, free tier included).
+Your app currently uses Prisma with SQLite. On Cloudflare you should use **D1** (SQLite at the edge, free tier included). **Windows:** run these commands in WSL.
 
 1. **Create a D1 database** (Cloudflare dashboard or CLI):
 
@@ -83,7 +129,7 @@ Until the app is wired to D1 (or another edge-compatible DB), the deploy will bu
 You’ll need these in production (and in the Cloudflare dashboard or via `wrangler secret put` for Workers):
 
 - `NEXTAUTH_URL` – Your production URL, e.g. `https://curling-coach.<your-subdomain>.workers.dev`
-- `NEXTAUTH_SECRET` – A long random string (e.g. `openssl rand -base64 32`)
+- `NEXTAUTH_SECRET` – A long random string. In WSL: `openssl rand -base64 32` (see “Generating a secret on Windows” above if you prefer PowerShell).
 
 For Workers deployed via Git (see Part 2), set these in the dashboard under **Workers & Pages → your project → Settings → Variables and Secrets**.
 
@@ -145,14 +191,14 @@ When the build succeeds, the app will be live at:
 
 ## Part 3: Deploy from your machine (optional)
 
-If you prefer not to use Git integration:
+If you prefer not to use Git integration, run these in your project root. **Windows:** use a WSL terminal so `wrangler login` and the build run in a Linux environment.
 
 ```bash
 # Build and deploy in one go (uses scripts added by migrate)
 npm run deploy
 ```
 
-You must be logged in:
+You must be logged in (opens a browser; use WSL so the callback works):
 
 ```bash
 npx wrangler login
@@ -169,7 +215,8 @@ npx wrangler secret put NEXTAUTH_URL
 
 ## Summary checklist
 
-- [ ] Run `npx @opennextjs/cloudflare migrate` and commit the generated config + scripts.
+- [ ] **Windows:** WSL set up, Node in WSL, project opened in WSL (clone there or `cd /mnt/c/...`).
+- [ ] Run `npx @opennextjs/cloudflare migrate` (in WSL) and commit the generated config + scripts.
 - [ ] Create a D1 database and add the binding to `wrangler.jsonc`.
 - [ ] Follow [Prisma’s Cloudflare/D1 guide](https://docs.prisma.io/docs/orm/prisma-client/deployment/edge/deploy-to-cloudflare) so the app uses D1 in production.
 - [ ] Set `NEXTAUTH_URL` and `NEXTAUTH_SECRET` in the Cloudflare project (Variables and Secrets).
